@@ -3,11 +3,11 @@ export const organizador_de_archivos = {
   name: "organizador_de_archivos",
   description: `Herramienta para organizar archivos en carpetas`,
   parameters: { "type": "object", "properties": { "tipo_de_archivo": { "type": "string" } }, "required": ["tipo_de_archivo"] },
-  execute: async (args: any) => {
+  execute: async ({ tipo_de_archivo }: { tipo_de_archivo: string }) => {
     try {
-function organizarArchivos(tipoDeArchivo) { \n  // Código para organizar archivos en carpetas \n  // ... \n  return "Archivos organizados con éxito"; \n}
+      return `Los archivos de tipo ${tipo_de_archivo} han sido analizados (simulado). Esta es una herramienta en desarrollo.`;
     } catch (error: any) {
-      return `Error fallido en la herramienta organizador_de_archivos: ${error.message}`;
+      return `Error en organizador_de_archivos: ${error.message}`;
     }
   }
 };

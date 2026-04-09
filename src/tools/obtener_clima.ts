@@ -3,11 +3,11 @@ export const obtener_clima = {
   name: "obtener_clima",
   description: `Obtiene el clima actual`,
   parameters: {"type": "object", "properties": { "ciudad": { "type": "string" } }, "required": ["ciudad"] },
-  execute: async (args: any) => {
+  execute: async ({ ciudad }: { ciudad: string }) => {
     try {
-function obtenerClima(ciudad) { return "El clima en " + ciudad + " es soleado"; }
+      return `El clima en ${ciudad} es actualmente soleado (simulado).`;
     } catch (error: any) {
-      return `Error fallido en la herramienta obtener_clima: ${error.message}`;
+      return `Error en obtener_clima: ${error.message}`;
     }
   }
 };
