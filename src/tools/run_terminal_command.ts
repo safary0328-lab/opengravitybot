@@ -5,7 +5,7 @@ const execAsync = promisify(exec);
 
 export const run_terminal_command = {
   name: "run_terminal_command",
-  description: "Ejecuta comandos reales de terminal (Windows/CMD/PowerShell) en la máquina del usuario como si fueras un programador humano. Vital para crear directorios (mkdir), inicializar aplicaciones Node o React (npm init, npx create-vite, npm install), correr scripts Python o gestionar la consola directamente.",
+  description: "Ejecuta comandos reales de terminal (Linux/Unix en la nube). IMPORTANTE: No intentes usar 'cd' como comando independiente, en su lugar utiliza el parámetro opcional 'cwd' para cambiar de directorio. En la nube de Hugging Face (Linux), utiliza siempre 'mkdir -p' para crear carpetas de forma segura sin que fallen si ya existen.",
   parameters: {
     type: "object",
     properties: {
