@@ -72,6 +72,38 @@ async function safeReply(ctx: any, text: string, parseMode: "Markdown" | "Markdo
   }
 }
 
+/**
+ * Procesa la respuesta del agente y decide si enviarla como texto o voz.
+ */
+async function handleAgentResponse(ctx: any, response: string, transcription?: string) {
+  if (response.startsWith("[[VOICE_REPLY]]") || isVoiceRequest(response) || (transcription && isVoiceRequest(transcription))) {
+    const textToSpeak = response.replace("[[VOICE_REPLY]]", "").trim();
+    try {
+      await ctx.replyWithChatAction("record_voice");
+      console.log(`🔊 Generando respuesta de voz: "${textToSpeak.substring(0, 50)}..."`);
+      
+      const mp3Buffer = await textToSpeech(textToSpeak);
+      const voiceBuffer = convertToVoice(mp3Buffer);
+      
+      await ctx.replyWithVoice(new InputFile(voiceBuffer, "voice.ogg"), {
+        caption: transcription ? `🎤 "${transcription}"` : undefined
+      });
+      
+      // Si el texto es muy largo, también enviamos el texto para referencia
+      if (textToSpeak.length > 300) {
+        await safeReply(ctx, textToSpeak, null);
+      }
+    } catch (voiceErr: any) {
+      console.error("❌ Error de voz:", voiceErr.message);
+      await safeReply(ctx, `${textToSpeak}\n\n⚠️ _(Nota: No pude generar el audio: ${voiceErr.message})_`, "Markdown");
+    }
+  } else {
+    // Respuesta normal de texto
+    const prefix = transcription ? `🎤 *"${transcription}"*\n\n` : "";
+    await safeReply(ctx, prefix + response, transcription ? "Markdown" : null);
+  }
+}
+
 // Middleware: Whitelist security
 bot.use(async (ctx, next) => {
   const userId = ctx.from?.id;
@@ -109,26 +141,11 @@ bot.on("message:text", async (ctx) => {
 
   try {
     await ctx.replyWithChatAction("typing");
-    console.log(`[Bot] Procesando texto: "${userText}"`);
+    console.log(`[Bot] ✍️ Procesando texto: "${userText}"`);
     const response = await runAgent(chatId, userText);
-
-    if (isVoiceRequest(userText)) {
-      try {
-        await ctx.replyWithChatAction("record_voice");
-        console.log("🔊 Generando voz...");
-        const mp3Buffer = await textToSpeech(response);
-        const voiceBuffer = convertToVoice(mp3Buffer);
-        await ctx.replyWithVoice(new InputFile(voiceBuffer, "voice.ogg"));
-      } catch (voiceErr: any) {
-        console.error("Error de voz:", voiceErr.message);
-        await safeReply(ctx, `${response}\n\n⚠️ _(Nota: No pude generar el audio: ${voiceErr.message})_`, "Markdown");
-      }
-    } else {
-      // Usamos texto plano si la respuesta es larga o tiene caracteres raros
-      await safeReply(ctx, response, null); 
-    }
+    await handleAgentResponse(ctx, response);
   } catch (err: any) {
-    console.error("Bot error:", err.message);
+    console.error("❌ Bot error:", err.message);
     await ctx.reply("Lo siento, hubo un error procesando tu mensaje: " + err.message);
   }
 });
@@ -148,33 +165,21 @@ bot.on("message:voice", async (ctx) => {
     
     const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
 
-    console.log("🎤 Transcribiendo...");
+    console.log(`🎤 Audio descargado (${audioBuffer.length} bytes). Transcribiendo...`);
     const transcription = await transcribeAudio(audioBuffer, "voice.ogg");
 
     if (!transcription) {
+      console.warn("⚠️ Transcripción vacía.");
       await ctx.reply("No pude entender el audio. ¿Puedes repetirlo?");
       return;
     }
 
-    console.log(`🎤 Transcripción: "${transcription}"`);
+    console.log(`🎤 Transcripción exitosa: "${transcription}"`);
     const response = await runAgent(chatId, transcription);
+    await handleAgentResponse(ctx, response, transcription);
 
-    if (isVoiceRequest(transcription)) {
-      try {
-        await ctx.replyWithChatAction("record_voice");
-        const mp3Buffer = await textToSpeech(response);
-        const voiceBuffer = convertToVoice(mp3Buffer);
-        await ctx.replyWithVoice(new InputFile(voiceBuffer, "voice.ogg"), {
-          caption: `🎤 "${transcription}"`,
-        });
-      } catch (voiceErr: any) {
-        await safeReply(ctx, `🎤 *"${transcription}"*\n\n${response}\n\n⚠️ _(Nota: No pude generar el audio: ${voiceErr.message})_`, "Markdown");
-      }
-    } else {
-      await safeReply(ctx, `🎤 *"${transcription}"*\n\n${response}`, "Markdown");
-    }
   } catch (err: any) {
-    console.error("Error procesando audio:", err.message);
+    console.error("❌ Error procesando audio:", err.stack);
     await ctx.reply("Lo siento, no pude procesar tu mensaje de voz. " + (err.message.includes("ffmpeg") ? "Falta FFmpeg en el sistema." : err.message));
   }
 });

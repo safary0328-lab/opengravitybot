@@ -7,6 +7,7 @@ import { create_agent_tool } from "./create_agent_tool.js";
 import { run_terminal_command } from "./run_terminal_command.js";
 import { write_system_file } from "./write_system_file.js";
 import { persistir_codigo_nube } from "./persistir_codigo_nube.js";
+import { voice_response } from "./voice_response.js";
 import { spawn } from "child_process";
 
 /**
@@ -119,9 +120,9 @@ export const tools = {
   persistir_codigo_nube,
   resolve_library_id,
   get_library_docs,
-  obtener_clima
-,
-  organizador_de_archivos
+  obtener_clima,
+  organizador_de_archivos,
+  voice_response
 };
 
 export type ToolName = keyof typeof tools;
