@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+Dockerfile
+.git
+.gitignore
+.env
+*.exe
+memory.db
+*.mp3
+*.ogg
+test_error.log
+client_secret.json
+service-account.json
+.gog_credentials.json

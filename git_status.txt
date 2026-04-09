@@ -1,0 +1,9 @@
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status.txt
+	gog_auth_help2.txt
+	gog_auth_keyring_help.txt
+	gog_auth_tokens_help.txt
+
+nothing added to commit but untracked files present (use "git add" to track)

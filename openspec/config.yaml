@@ -1,0 +1,16 @@
+schema: spec-driven
+
+# Project context
+context: |
+  Tech stack: TypeScript, Node.js (v20+), Grammy (Telegram Bot SDK), Groq/OpenRouter (LLMs), Supabase (Database/Auth).
+  Conventions: ESM, functional patterns, robust error handling, detailed logging.
+  Domain: Autonomous AI Agent for Telegram ecosystem management.
+  Key workflows: Spec-driven development via OpenSpec (Proposal -> Implementation -> Archive).
+
+# Per-artifact rules
+rules:
+  proposal:
+    - Focus on clear intent and spec deltas
+    - Maintain Spanish as the primary interaction language for the user
+  tasks:
+    - Granular implementation steps linked to spec requirements

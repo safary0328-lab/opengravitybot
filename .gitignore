@@ -1,0 +1,11 @@
+node_modules
+.env
+*.log
+memory.db
+service-account.json
+dist
+*.exe
+.gog_credentials.json
+.gog_auth.json
+client_secret.json
+test_tts.mp3
