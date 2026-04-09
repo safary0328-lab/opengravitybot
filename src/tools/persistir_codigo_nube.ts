@@ -17,6 +17,7 @@ export const persistir_codigo_nube = {
     required: ["mensaje_commit"],
   },
   execute: async (args: { mensaje_commit: string }) => {
+    try {
       // Definimos opciones de ejecución robustas
       const shellToUse = process.platform === 'win32' ? (process.env.ComSpec || 'cmd.exe') : '/bin/sh';
       const runOptions = { shell: shellToUse, cwd: process.cwd() };
