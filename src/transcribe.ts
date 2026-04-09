@@ -18,10 +18,14 @@ export async function transcribeAudio(fileBuffer: Buffer, filename: string): Pro
     console.log("🛠️ Intentando convertir OGG a MP3 para Groq...");
     try {
       // Verificamos si ffmpeg está disponible antes de llamar
-      const checkFfmpeg = spawnSync('ffmpeg', ['-version']);
+      const checkFfmpeg = spawnSync('ffmpeg', ['-version'], { shell: true });
       
       if (checkFfmpeg.error) {
-        console.warn("⚠️ FFmpeg no encontrado en el sistema. Enviando buffer original a Groq...");
+        if ((checkFfmpeg.error as any).code === 'ENOENT') {
+          console.warn("⚠️ FFmpeg no encontrado en el sistema (ENOENT). Enviando buffer original a Groq...");
+        } else {
+          console.warn("⚠️ Error al verificar FFmpeg:", checkFfmpeg.error.message);
+        }
       } else {
         const conversion = spawnSync('ffmpeg', [
           '-i', 'pipe:0',      // Entrada desde stdin (buffer)
@@ -29,7 +33,11 @@ export async function transcribeAudio(fileBuffer: Buffer, filename: string): Pro
           '-acodec', 'libmp3lame',
           '-ab', '128k',       // Calidad decente para voz
           'pipe:1'             // Salida a stdout
-        ], { input: fileBuffer, maxBuffer: 10 * 1024 * 1024 });
+        ], { 
+          input: fileBuffer, 
+          maxBuffer: 10 * 1024 * 1024,
+          shell: true // Necesario para resolver ffmpeg en Windows
+        });
   
         if (conversion.status === 0) {
           finalBuffer = conversion.stdout;
@@ -39,8 +47,8 @@ export async function transcribeAudio(fileBuffer: Buffer, filename: string): Pro
           console.warn("⚠️ Falló la conversión con FFmpeg (status !== 0), usando buffer original.", conversion.stderr?.toString());
         }
       }
-    } catch (err) {
-      console.error("❌ Error inesperado ejecutando FFmpeg:", err);
+    } catch (err: any) {
+      console.error("❌ Error inesperado ejecutando FFmpeg:", err.message);
     }
   }
 

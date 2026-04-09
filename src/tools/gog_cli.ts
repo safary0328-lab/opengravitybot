@@ -52,6 +52,10 @@ export const google_workspace_gog = {
         }
       }
 
+      const shellToUse = process.platform === 'win32' ? (process.env.ComSpec || 'cmd.exe') : '/bin/sh';
+      runOptions.shell = shellToUse;
+      runOptions.cwd = process.cwd();
+
       const { stdout, stderr } = await execAsync(commandToRun, runOptions);
       
       const stderrStr = stderr ? stderr.toString() : "";

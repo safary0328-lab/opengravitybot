@@ -20,15 +20,28 @@ function convertToVoice(mp3Buffer: Buffer): Buffer {
       '-compression_level', '10',
       '-f', 'opus',
       'pipe:1'
-    ], { input: mp3Buffer, maxBuffer: 10 * 1024 * 1024 });
+    ], { 
+      input: mp3Buffer, 
+      maxBuffer: 10 * 1024 * 1024,
+      shell: true // Necesario en Windows para resolver ejecutables/scripts
+    });
+
+    if (conversion.error) {
+      if ((conversion.error as any).code === 'ENOENT') {
+        console.error("❌ Error: FFmpeg no está instalado en el sistema. Los mensajes de voz no se enviarán como OGG Opus.");
+      } else {
+        console.error("❌ Error inesperado ejecutando FFmpeg:", conversion.error.message);
+      }
+      return mp3Buffer;
+    }
 
     if (conversion.status === 0) {
       console.log("✅ Conversión a OGG exitosa.");
       return conversion.stdout;
     }
-    console.error("❌ FFmpeg falló en conversión de salida:", conversion.stderr.toString());
-  } catch (err) {
-    console.error("❌ Error al convertir a voz:", err);
+    console.error("❌ FFmpeg falló en conversión de salida:", conversion.stderr?.toString());
+  } catch (err: any) {
+    console.error("❌ Error al convertir a voz:", err.message);
   }
   return mp3Buffer; // Fallback a MP3 si falla
 }

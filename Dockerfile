@@ -12,8 +12,10 @@ RUN curl -L -o source.zip https://github.com/steipete/gogcli/archive/refs/tags/v
 FROM node:20-bookworm
 WORKDIR /app
 
-# INSTALAMOS FFMPEG (CRÍTICO PARA AUDIO/VOZ)
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+# INSTALAMOS FFMPEG, GIT Y OPENSPEC (CRÍTICO PARA AUDIO Y FLUJO DE TRABAJO)
+RUN apt-get update && apt-get install -y ffmpeg git && \
+    npm install -g @fission-ai/openspec && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copiar el binario gog construido
 COPY --from=builder /usr/local/bin/gog /usr/local/bin/gog

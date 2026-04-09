@@ -22,14 +22,22 @@ export const run_terminal_command = {
   },
   execute: async (args: { command: string, cwd?: string }) => {
     try {
-      const options = args.cwd ? { cwd: args.cwd } : {};
+      const shellToUse = process.platform === 'win32' ? (process.env.ComSpec || 'cmd.exe') : '/bin/sh';
+      const options = { 
+        cwd: args.cwd || process.cwd(),
+        shell: shellToUse
+      };
+      
       const { stdout, stderr } = await execAsync(args.command, options);
       if (stderr && stderr.trim().length > 0) {
-        return `Detalles de salida del log (pueden ser warnings del npm):\n${stderr}\n\nSalida estándar:\n${stdout}`;
+        return `Detalles de salida del log (pueden ser warnings o errores minores):\n${stderr}\n\nSalida estándar:\n${stdout}`;
       }
-      return stdout || "El comando se ejecutó silenciosamente y con la máxima rapidez de forma exitosa.";
+      return stdout || "El comando se ejecutó de forma exitosa y sin salida de texto.";
     } catch (error: any) {
-      return `Fallo intentando ejecutar el comando de shell: ${error.message}`;
+      if (error.code === 'ENOENT') {
+        return `Error Crítico (ENOENT): No se encontró el intérprete de comandos o el comando '${args.command}' no existe. En Windows, asegúrate de que el comando sea válido para CMD o PowerShell.`;
+      }
+      return `Fallo intentando ejecutar el comando de shell: ${error.message}${error.stderr ? '\nDetalle: ' + error.stderr : ''}`;
     }
   }
 };
