@@ -25,4 +25,5 @@ export const config = {
   SUPABASE_KEY: (process.env.SUPABASE_KEY || "").trim(),
   ELEVENLABS_API_KEY: (process.env.ELEVENLABS_API_KEY || "").trim(),
   TAVILY_API_KEY: (process.env.TAVILY_API_KEY || "").trim(),
+  GEMINI_API_KEY: (process.env.GEMINI_API_KEY || "").trim(),
 };
